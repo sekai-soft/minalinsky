@@ -1,12 +1,5 @@
-# nitter-xposter
+# minalinsky
 Crosspost from Twitter to Mastodon and Bluesky (based on Nitter)
-
-## ⚠️ PSA
-It is increasingly [hard](https://github.com/zedeus/nitter/issues/983) to use and host a public Nitter instance.
-
-As a result, it is probably not a good idea to use it with a public Nitter instance.
-
-Check out [sekai-soft/freebird](https://github.com/sekai-soft/freebird) for a guide on how to self-host your own Nitter instance alongside `nitter-xposter`.
 
 ## Notice
 * Twitter crawling is based on Nitter, so only public accounts are supported.
@@ -18,27 +11,27 @@ Check out [sekai-soft/freebird](https://github.com/sekai-soft/freebird) for a gu
 - [ ] Video
 
 ## Usage
-The easiest way to use this program is to run it as a docker compose service on your NAS or a VPS.
+The easiest way to use this application is to run it as a docker compose service on your NAS or a VPS.
 
 ### Crosspost to Mastodon
 You need to create a developer application on your Mastodon instance first
 
 1. Go to `https://<your-mastodon-instance>/settings/applications/new`
-2. On the form, put `nitter-xposter` for `Application name`
+2. On the form, put `minalinsky` for `Application name`
 3. Under `Scopes`, uncheck `read`, `write` and `follow` checkboxes. Check `write:media` and `write:statuses` checkboxes.
 4. Click `Submit`
-5. Go to `https://<your-mastodon-instance>/settings/applications` and click the `nitter-xposter` application you just created
+5. Go to `https://<your-mastodon-instance>/settings/applications` and click the `minalinsky` application you just created
 6. You will need the following
     * `Client key`
     * `Client secret`
     * `Your access token`
 
-After obtaining the credentials, you can use the following `docker-compose.yml` to run the program
+After obtaining the credentials, you can use the following `docker-compose.yml` to run the application
 ```yaml
 version: '3'
 services:
   app:
-    image: ghcr.io/k-t-corp/nitter-xposter:latest
+    image: ghcr.io/sekai-soft/minalinsky:latest
     volumes:
       - ./dbs:/app/dbs
 #      - ./post.sh:/app/post.sh  # you can optionally mount a shell script at /app/post.sh to run after every Nitter crawl to perform tasks such as sending a heartbeat
@@ -63,7 +56,7 @@ You can use the following `docker-compose.yml` to run the program
 version: '3'
 services:
   app:
-    image: ghcr.io/k-t-corp/nitter-xposter:latest
+    image: ghcr.io/sekai-soft/minalinsky:latest
     volumes:
       - ./dbs:/app/dbs
 #      - ./post.sh:/app/post.sh  # you can optionally mount a shell script at /app/post.sh to run after every Nitter crawl to perform tasks such as sending a heartbeat
@@ -78,9 +71,6 @@ services:
       INTERVAL_MINUTES: '30'  # it is recommended to set the polling interval at least 5 minutes so that it doesn't violate Bluesky's createSession rate limit https://docs.bsky.app/docs/advanced-guides/rate-limits
     restart: always
 ```
-
-## Like what you see?
-Consider support us on [Patreon](https://www.patreon.com/sekaisoft) :)
 
 ## Development
 
