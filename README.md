@@ -1,5 +1,5 @@
 # minalinsky
-Crosspost from Twitter to Mastodon and Bluesky (based on Nitter)
+Crosspost from Twitter to Mastodon (based on Nitter)
 
 ## Notice
 * Twitter crawling is based on Nitter, so only public accounts are supported.
@@ -26,51 +26,51 @@ You need to create a developer application on your Mastodon instance first
     * `Client secret`
     * `Your access token`
 
+It's also strongly advised to obtain a burner Twitter account in order to crawl your own Twitter account. Do not enable 2FA for your burner Twitter account.
+
 After obtaining the credentials, you can use the following `docker-compose.yml` to run the application
 ```yaml
-version: '3'
 services:
-  app:
+  nitter:
+    image: ghcr.io/sekai-soft/nitter-self-contained
+    container_name: nitter
+    volumes:
+      - nitter:/nitter-data
+    environment:
+      TWITTER_USERNAME: <ENTER YOUR BURNER TWITTER USERNAME HERE>
+      TWITTER_PASSWORD: <ENTER YOUR BURNER TWITTER PASSWORD HERE>
+      NITTER_ACCOUNTS_FILE: /nitter-data/guest_accounts.json
+      DISABLE_NGINX: "1"
+      INSTANCE_HOSTNAME: nitter
+      INSTANCE_PORT: "80"
+    restart: unless-stopped
+    healthcheck:
+      test: wget -nv --tries=1 --spider http://127.0.0.1:80 || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 12
+  minalinsky:
     image: ghcr.io/sekai-soft/minalinsky:latest
     volumes:
-      - ./dbs:/app/dbs
+      - minalinsky:/app/dbs
 #      - ./post.sh:/app/post.sh  # you can optionally mount a shell script at /app/post.sh to run after every Nitter crawl to perform tasks such as sending a heartbeat
     environment:
       SQLITE_FILE: /app/dbs/db.db
-      NITTER_HOST: <ENTER YOUR NITTER HOST HERE>
-      NITTER_HTTPS: <'true' OR 'false'>  # by default 'true'; set to 'false' if your Nitter instance does not support https
+      NITTER_HOST: nitter
+      NITTER_HTTPS: 'false'
       TWITTER_HANDLE: <REPLACE WITH YOUR TWITTER USERNAME, WITHOUT @>
       MASTODON_HOST: <REPLACE WITH YOUR MASTODON INSTANCE, e.g. mastodon.ktachibana.party>
       MASTODON_CLIENT_ID: <REPLACE WITH YOUR MASTODON CLIENT KEY>
       MASTODON_CLIENT_SECRET: <REPLACE WITH YOUR MASTODON CLIENT SECRET>
       MASTODON_ACCESS_TOKEN: <REPLACE WITH YOUR MASTODON ACCESS TOKEN>
       MASTODON_STATUS_LIMIT: '10'  # set the maximum of statuses to be posted at once
-    restart: always
+    restart: unless-stopped
+volumes:
+  nitter:
+  minalinsky:
 ```
 
-This will crawl the Nitter RSS for your Twitter username every 5 minutes, and crosspost the tweets to your Mastodon account.
-
-### Crosspost to Bluesky
-You can use the following `docker-compose.yml` to run the program
-```yaml
-version: '3'
-services:
-  app:
-    image: ghcr.io/sekai-soft/minalinsky:latest
-    volumes:
-      - ./dbs:/app/dbs
-#      - ./post.sh:/app/post.sh  # you can optionally mount a shell script at /app/post.sh to run after every Nitter crawl to perform tasks such as sending a heartbeat
-    environment:
-      SQLITE_FILE: /app/dbs/db.db
-      NITTER_HOST: <ENTER YOUR NITTER HOST HERE>
-      NITTER_HTTPS: <'true' OR 'false'>  # by default 'true'; set to 'false' if your Nitter instance does not support https
-      TWITTER_HANDLE: <REPLACE WITH YOUR TWITTER USERNAME, WITHOUT @>
-     BSKY_HANDLE: ${BSKY_HANDLE}
-      BSKY_PASSWORD: ${BSKY_PASSWORD}
-      BSKY_STATUS_LIMIT: '10'   # set the maximum of statuses to be posted at once
-      INTERVAL_MINUTES: '30'  # it is recommended to set the polling interval at least 5 minutes so that it doesn't violate Bluesky's createSession rate limit https://docs.bsky.app/docs/advanced-guides/rate-limits
-    restart: always
-```
+This will crawl your Twitter account every 5 minutes, and crosspost the tweets to your Mastodon account.
 
 ## Development
 
