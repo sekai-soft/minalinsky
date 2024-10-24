@@ -74,6 +74,11 @@ This will crawl your Twitter account every 5 minutes, and crosspost the tweets t
 
 ## Development
 
+### Run locally
+```shell
+docker compose up --build
+```
+
 ### Run unit tests
 ```shell
 python -m unittest discover

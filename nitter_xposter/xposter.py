@@ -41,6 +41,14 @@ class XpostConfig:
         return self.bsky_handle and self.bsky_password
 
 
+def is_twitter_hashtag(url: str) -> bool:
+    return url.startswith("https://twitter.com/search?q=%23")
+
+
+def get_twitter_hashtag(url: str) -> str:
+    return url.replace("https://twitter.com/search?q=%23", "")
+
+
 def convert_description_to_text(description, nitter_host):
     # Use BeautifulSoup to parse the HTML content
     soup = BeautifulSoup(description, "html.parser")
@@ -56,7 +64,12 @@ def convert_description_to_text(description, nitter_host):
                 # or uses an alternative frontend redirecting extension that redirects to another nitter instance of their choice
                 parsed_href = parsed_href._replace(netloc='twitter.com')
                 parsed_href = parsed_href._replace(scheme='https')
-            a.replace_with(urlunparse(parsed_href))
+            url = urlunparse(parsed_href)
+            if is_twitter_hashtag(url):
+                hashtag = get_twitter_hashtag(url)
+                a.replace_with(f"#{hashtag}")
+            else:
+                a.replace_with(url)
 
     # Extract text, which now includes URLs in place of anchor tags
     text = soup.get_text()
@@ -140,16 +153,13 @@ def xpost(config: XpostConfig):
         raise Exception("Must specify either Mastodon or bsky credentials. Cannot specify both or neither.")
 
     # Parsing the RSS feed
-    if config.nitter_https:
-        rss_url = f"https://{config.nitter_host}/{config.twitter_handle}/rss"
-    else:
-        rss_url = f"http://{config.nitter_host}/{config.twitter_handle}/rss"
+    rss_url = f"{'https' if config.nitter_https else 'http'}://{config.nitter_host}/{config.twitter_handle}/rss"
     try:
         res = requests.get(rss_url)
     except Exception as e:
         # TODO: handle error
         logging.error("Error retrieving tweets, aborting: " + str(e))
-        return 
+        return
     feed = feedparser.parse(res.text)
 
     parsed_entries = []  # type: List[ParsedEntry]
