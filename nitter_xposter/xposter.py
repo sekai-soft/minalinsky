@@ -21,6 +21,7 @@ class XpostConfig:
     sqlite_file: str
     nitter_host: str
     nitter_https: bool
+    nitter_rss_password: str
     twitter_handle: str
     mastodon_host: Optional[str]
     mastodon_client_id: Optional[str]
@@ -153,7 +154,11 @@ def xpost(config: XpostConfig):
         raise Exception("Must specify either Mastodon or bsky credentials. Cannot specify both or neither.")
 
     # Parsing the RSS feed
-    rss_url = f"{'https' if config.nitter_https else 'http'}://{config.nitter_host}/{config.twitter_handle}/rss"
+    if config.nitter_rss_password:
+        rss_url = f"{'https' if config.nitter_https else 'http'}://{config.nitter_host}/{config.twitter_handle}/rss?key={config.nitter_rss_password}"
+    else:
+        rss_url = f"{'https' if config.nitter_https else 'http'}://{config.nitter_host}/{config.twitter_handle}/rss"
+
     try:
         res = requests.get(rss_url)
     except Exception as e:

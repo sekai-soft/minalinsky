@@ -74,9 +74,18 @@ This will crawl your Twitter account every 5 minutes, and crosspost the tweets t
 
 ## Development
 
-### Run locally
+### Run locally with an embedded Nitter instance
+Copy `.example.env` to `.env` and fill its content
+
 ```shell
 docker compose up --build
+```
+
+### Run locally with a remote Nitter instance (e.g. nitterless)
+Copy `.example.nitterless.env` to `.env` and fill its content
+
+```shell
+docker compose -f docker-compose.nitterless.yml up --build
 ```
 
 ### Run unit tests

@@ -59,6 +59,7 @@ class XposterTestCase(unittest.TestCase):
             sqlite_file=f"test_{uuid.uuid4()}.db",
             nitter_host='nitter.example.com',
             nitter_https=True,
+            nitter_rss_password='',
             twitter_handle='twitter_handle',
             mastodon_host='mastodon.example.com',
             mastodon_client_id='client_id',

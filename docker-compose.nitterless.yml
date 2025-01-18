@@ -1,0 +1,17 @@
+services:
+  minalinsky:
+    build: .
+    volumes:
+      - ./dbs:/app/dbs
+    environment:
+      SQLITE_FILE: /app/dbs/db.db
+      NITTER_HOST: ${NITTER_HOST}
+      NITTER_HTTPS: 'true'
+      NITTER_RSS_PASSWORD: ${NITTER_RSS_PASSWORD}
+      TWITTER_HANDLE: ${TWITTER_HANDLE}
+      MASTODON_HOST: ${MASTODON_HOST}
+      MASTODON_CLIENT_ID: ${MASTODON_CLIENT_ID}
+      MASTODON_CLIENT_SECRET: ${MASTODON_CLIENT_SECRET}
+      MASTODON_ACCESS_TOKEN: ${MASTODON_ACCESS_TOKEN}
+      MASTODON_STATUS_LIMIT: '10'  # set the maximum of statuses to be posted at once
+      INTERVAL_MINUTES: '1'

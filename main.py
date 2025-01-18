@@ -15,6 +15,7 @@ if __name__ == "__main__":
         sqlite_file=env_or_bust('SQLITE_FILE'),
         nitter_host=env_or_bust('NITTER_HOST'),
         nitter_https=bool(os.environ.get('NITTER_HTTPS', 'true') == 'true'),
+        nitter_rss_password=os.environ.get('NITTER_RSS_PASSWORD', ''),
         twitter_handle=env_or_bust('TWITTER_HANDLE'),
         mastodon_host=os.getenv('MASTODON_HOST', None),
         mastodon_client_id=os.getenv('MASTODON_CLIENT_ID', None),

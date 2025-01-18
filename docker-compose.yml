@@ -23,7 +23,6 @@ services:
     environment:
       SQLITE_FILE: /app/dbs/db.db
       NITTER_HOST: nitter
-      NITTER_PORT: '80'
       NITTER_HTTPS: 'false'
       TWITTER_HANDLE: ${TWITTER_HANDLE}
       MASTODON_HOST: ${MASTODON_HOST}
