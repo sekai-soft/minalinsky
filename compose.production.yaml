@@ -1,0 +1,17 @@
+services:
+  minalinsky:
+    image: ghcr.io/sekai-soft/minalinsky:latest
+    container_name: minalinsky
+    restart: unless-stopped
+    volumes:
+      - minalinsky:/app/dbs
+      - ./post.sh:/app/post.sh
+    environment:
+      SQLITE_FILE: /app/dbs/db.db
+      NITTER_HTTPS: 'true'      
+      MASTODON_STATUS_LIMIT: '10'  # set the maximum of statuses to be posted at once
+      INTERVAL_MINUTES: '1'
+    env_file: env
+
+volumes:
+  minalinsky:

@@ -1,4 +1,4 @@
-name: Test and build
+name: Test, build and deploy
 
 on:
   push:
@@ -45,7 +45,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: |
+            ghcr.io/${{ github.repository }}:latest-amd64
+            ghcr.io/${{ github.repository }}:${{ github.sha }}-amd64
           platforms: linux/amd64
       - name: Export digest
         run: |
@@ -61,7 +63,7 @@ jobs:
           retention-days: 1
 
   build-arm:
-    runs-on: buildjet-2vcpu-ubuntu-2204-arm
+    runs-on: ubuntu-24.04-arm
     needs: test
     if: github.event_name == 'push'
     steps:
@@ -79,7 +81,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: |
+            ghcr.io/${{ github.repository }}:latest-arm64
+            ghcr.io/${{ github.repository }}:${{ github.sha }}-arm64
           platforms: linux/arm64
       - name: Export digest
         run: |
@@ -119,6 +123,9 @@ jobs:
         working-directory: /tmp/digests
         run: |
           docker buildx imagetools create -t ghcr.io/${{ github.repository }}:latest $(printf 'ghcr.io/${{ github.repository }}@sha256:%s ' *)
+          docker buildx imagetools create -t ghcr.io/${{ github.repository }}:${{ github.sha }} \
+            ghcr.io/${{ github.repository }}:${{ github.sha }}-amd64 \
+            ghcr.io/${{ github.repository }}:${{ github.sha }}-arm64
         
   deploy:
     runs-on: ubuntu-latest
@@ -131,6 +138,11 @@ jobs:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ops
-      - name: Pull and restart latest container
+      - name: Pull and restart container
         run: |
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "ubuntu@ktcorp" "cd /home/ubuntu/minalinsky && docker compose pull && docker compose up -d"
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "nixos@gibraltar" \
+            "mkdir -p /home/nixos/minalinsky && \
+             wget -O /home/nixos/minalinsky/compose.yaml https://raw.githubusercontent.com/sekai-soft/minalinsky/${{ github.sha }}/compose.production.yaml && \
+             sed -i 's|ghcr.io/sekai-soft/minalinsky:latest|ghcr.io/sekai-soft/minalinsky:${{ github.sha }}|g' /home/nixos/minalinsky/compose.yaml && \
+             docker compose -f /home/nixos/minalinsky/compose.yaml pull minalinsky && \
+             docker compose -f /home/nixos/minalinsky/compose.yaml up -d"
